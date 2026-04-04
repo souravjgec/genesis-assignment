@@ -42,6 +42,7 @@ jobs:
           checkov \
             -d terraform \
             --framework terraform \
+            --config-file .checkov.yml \
             --output json \
             --output-file-path checkov_report.json \
             --soft-fail-on LOW,MEDIUM,HIGH \
