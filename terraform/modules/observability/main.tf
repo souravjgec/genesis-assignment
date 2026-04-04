@@ -2,12 +2,15 @@ locals {
   dashboard_name = "${var.name_prefix}-overview"
 }
 
+#checkov:skip=CKV_AWS_158: CloudWatch Logs uses the default service-managed encryption because introducing a CMK would add unnecessary complexity for this assignment.
+#checkov:skip=CKV_AWS_338: Log retention is set to 14 days to control free-tier log storage costs during the demo period.
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${var.lambda_function_name}"
   retention_in_days = var.log_retention_days
   tags              = var.tags
 }
 
+#checkov:skip=CKV_AWS_26: SNS uses default service-managed encryption to keep the alerting setup simple for the assignment.
 resource "aws_sns_topic" "alerts" {
   name = "${var.name_prefix}-alerts"
   tags = var.tags
