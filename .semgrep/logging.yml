@@ -1,0 +1,24 @@
+rules:
+  - id: genesis.raw-request-body-logging
+    message: Logging raw request data can leak credentials, tokens, or PII and should be sanitized or removed.
+    severity: ERROR
+    languages:
+      - python
+    patterns:
+      - pattern-either:
+          - pattern: $LOGGER.$METHOD(..., $BODY, ...)
+          - pattern: logging.$METHOD(..., $BODY, ...)
+          - pattern: print($BODY)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(debug|info|warning|error|critical|exception)$
+      - metavariable-regex:
+          metavariable: $BODY
+          regex: ^(raw_body|body|request_body|payload|request|headers|request_headers|json_body|request_json)$
+    metadata:
+      category: security
+      technology:
+        - python
+      confidence: HIGH
+      likelihood: HIGH
+      impact: MEDIUM
