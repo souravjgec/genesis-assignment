@@ -7,7 +7,7 @@ This repository contains the Part 1 foundation for the Genesis Group take-home a
 - GitHub Actions workflows for secure CI and gated deployment
 - Developer tooling for local secret scanning and formatting
 
-This repo is currently focused on Part 1 only: the application, the intentional flaws, and the secure CI pipeline.
+This repo is currently focused on Part 1 only: the application, the intentional flaws, the secure CI pipeline, and the deployment/smoke-test workflow needed to complete the 10 pipeline stages.
 
 ## Repository Layout:
 
@@ -102,6 +102,8 @@ Runs on every pull request and every push to `main`.
 6. Trivy image scan
 7. SBOM generation with Syft/Anchore SBOM action
 
+These stages run for pull requests and for direct pushes to `main`.
+
 Expected evidence flow for the assignment:
 
 1. First failed run: Gitleaks blocks the hardcoded fake secret.
@@ -112,12 +114,33 @@ Expected evidence flow for the assignment:
 
 Runs only after a successful `main` branch CI workflow and is designed to:
 
-1. Authenticate to AWS with GitHub OIDC
-2. Package the Lambda artifact
-3. Update the Lambda function
-4. Run a smoke test against `/health`
+1. Run Checkov against the Terraform code as stage `9a`
+2. Authenticate to AWS with GitHub OIDC
+3. Package the Lambda artifact
+4. Update the Lambda function
+5. Run a smoke test against `/health`
+
+This workflow does not run for pull requests. It only runs when:
+
+1. `ci.yml` completed successfully
+2. the triggering event was a push
+3. the pushed branch was `main`
 
 This workflow expects Terraform-created AWS resources and GitHub repository secrets to be configured later in Part 2.
+
+Checkov behavior in the pipeline:
+
+- scans the `terraform/` directory before deployment
+- uploads `checkov_report.json` as a workflow artifact
+- blocks only on CRITICAL Checkov findings
+- lets lower-severity findings stay visible so they can be justified or remediated deliberately
+
+Required GitHub repository secrets for `deploy.yml`:
+
+- `AWS_GITHUB_ACTIONS_ROLE_ARN`
+- `AWS_REGION`
+- `LAMBDA_FUNCTION_NAME`
+- `API_BASE_URL`
 
 ## Pipeline Design Decisions
 
@@ -125,3 +148,4 @@ This workflow expects Terraform-created AWS resources and GitHub repository secr
 2. Deploy is split into a dedicated workflow triggered from successful `main` CI runs, which keeps pull requests safe and makes the branch behavior explicit.
 3. Scan outputs are uploaded as artifacts so the Trivy report, Semgrep SARIF, coverage XML, and SBOM remain available for audit evidence after the run completes.
 4. The custom Semgrep rule is policy-oriented, not one-line-specific, so it can catch similar unsafe request-logging mistakes beyond the intentional example.
+5. Checkov runs as a dedicated pre-deploy gate so Terraform policy failures are isolated from application deploy failures.

@@ -1,0 +1,3 @@
+{
+  "note": "Replace this placeholder with a real Checkov JSON report before submission. Generate it with: checkov -d terraform --framework terraform --output json > reports/checkov_report.json"
+}

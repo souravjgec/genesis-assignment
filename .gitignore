@@ -7,3 +7,7 @@ app/tests/__pycache__/
 lambda.zip
 package/
 .DS_Store
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
