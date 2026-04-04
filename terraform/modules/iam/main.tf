@@ -4,7 +4,10 @@ data "aws_caller_identity" "current" {}
 
 locals {
   oidc_provider_host = "token.actions.githubusercontent.com"
-  repository_subject = "repo:${var.github_repository}:ref:refs/heads/${var.github_main_branch}"
+  allowed_subjects = [
+    "repo:${var.github_repository}:ref:refs/heads/${var.github_main_branch}",
+    "repo:${var.github_repository}:environment:${var.github_environment}",
+  ]
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -111,7 +114,7 @@ data "aws_iam_policy_document" "github_oidc_assume_role" {
     condition {
       test     = "StringLike"
       variable = "${local.oidc_provider_host}:sub"
-      values   = [local.repository_subject]
+      values   = local.allowed_subjects
     }
   }
 }

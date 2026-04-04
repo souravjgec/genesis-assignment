@@ -13,6 +13,7 @@ Creates the IAM resources required for the Genesis assignment Lambda deployment 
 | `name_prefix` | `string` | Prefix used for IAM resource names. |
 | `github_repository` | `string` | Repository in `owner/name` format allowed to assume the deploy role. |
 | `github_main_branch` | `string` | Branch allowed to deploy through OIDC. Defaults to `main`. |
+| `github_environment` | `string` | GitHub Actions environment allowed to deploy through OIDC. Defaults to `dev`. |
 | `lambda_function_name` | `string` | Lambda function name the deploy role can update. |
 | `aws_region` | `string` | AWS region where the Lambda function runs. |
 | `log_group_arn` | `string` | CloudWatch Log Group ARN used by the Lambda function. |

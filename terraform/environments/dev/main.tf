@@ -105,6 +105,7 @@ module "iam" {
   name_prefix             = local.name_prefix
   github_repository       = var.github_repo
   github_main_branch      = var.github_main_branch
+  github_environment      = var.environment
   lambda_function_name    = local.name_prefix
   aws_region              = var.aws_region
   log_group_arn           = module.observability.log_group_arn

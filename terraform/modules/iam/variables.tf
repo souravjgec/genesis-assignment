@@ -14,6 +14,12 @@ variable "github_main_branch" {
   default     = "main"
 }
 
+variable "github_environment" {
+  description = "GitHub Actions environment name allowed to assume the deploy role."
+  type        = string
+  default     = "dev"
+}
+
 variable "lambda_function_name" {
   description = "Name of the Lambda function that GitHub Actions is allowed to update."
   type        = string
