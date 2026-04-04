@@ -85,7 +85,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - checkov
-    environment: dev
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -138,7 +137,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - deploy
-    environment: dev
     steps:
       - name: Probe /health endpoint
         run: |
