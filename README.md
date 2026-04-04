@@ -58,7 +58,6 @@ PYTHONPATH=. pytest app/tests --cov=app --cov-report=term-missing --cov-fail-und
 These are present on purpose for the first failed pipeline demonstration.
 
 1. `app/main.py` contains a fake hardcoded secret:
-   `API_KEY = "genesis-secret-abc123"`
    This should be blocked by Gitleaks.
 2. `POST /items` logs the raw request body before sanitisation.
    This should be blocked by Semgrep using the custom rule in `.semgrep/logging.yml`.

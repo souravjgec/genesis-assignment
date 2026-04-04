@@ -12,8 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Genesis Items API", version="1.0.0")
 
-# Intentional flaw for Part 1: this fake secret is planted so Gitleaks can block the pipeline.
-API_KEY = "genesis-secret-abc123"
+
 
 ITEMS: Dict[str, Dict[str, str]] = {}
 
