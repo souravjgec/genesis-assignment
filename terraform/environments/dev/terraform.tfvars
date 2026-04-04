@@ -1,0 +1,7 @@
+aws_region    = "us-east-1"
+project_name  = "genesis-devsecops"
+environment   = "dev"
+owner         = "Sourav Sarkar"
+function_name = "genesis-api-dev"
+github_repo   = "souravjgec/genesis-devsecops-assignment"
+alarm_email   = "s.sarkar19967@gmail.com"
