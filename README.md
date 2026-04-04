@@ -9,7 +9,7 @@ This repository contains the Part 1 foundation for the Genesis Group take-home a
 
 This repo is currently focused on Part 1 only: the application, the intentional flaws, and the secure CI pipeline.
 
-## Repository Layout
+## Repository Layout:
 
 ```text
 app/
