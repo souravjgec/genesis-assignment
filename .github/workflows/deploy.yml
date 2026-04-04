@@ -36,13 +36,20 @@ jobs:
         run: pip install checkov
 
       - name: Run Checkov against Terraform
+        id: checkov_scan
+        continue-on-error: true
         run: |
           checkov \
             -d terraform \
             --framework terraform \
             --output json \
+            --output-file-path checkov_report.json \
             --soft-fail-on LOW,MEDIUM,HIGH \
-            --hard-fail-on CRITICAL > checkov_report.json
+            --hard-fail-on CRITICAL
+
+      - name: Verify Checkov report exists
+        if: always()
+        run: test -s checkov_report.json
 
       - name: Upload Checkov report
         if: always()
@@ -50,6 +57,12 @@ jobs:
         with:
           name: checkov-report
           path: checkov_report.json
+
+      - name: Fail workflow if Checkov found blocking issues
+        if: steps.checkov_scan.outcome == 'failure'
+        run: |
+          echo "Checkov found blocking findings. See the uploaded checkov-report artifact for full details."
+          exit 1
 
       - name: Write Checkov summary
         if: success()
