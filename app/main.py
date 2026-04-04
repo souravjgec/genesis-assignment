@@ -35,8 +35,7 @@ def healthcheck() -> dict[str, str]:
 async def create_item(request: Request, payload: ItemCreate) -> dict[str, str]:
     raw_body = (await request.body()).decode("utf-8")
 
-    # Intentional flaw for Part 1: Semgrep should flag unsafe raw request logging.
-    LOGGER.info("Raw request body: %s", raw_body)
+
 
     item_id = str(uuid.uuid4())
     item = {"id": item_id, "name": payload.name, "description": payload.description}
@@ -68,9 +67,7 @@ def lambda_handler(event: dict, context: object) -> dict:
         parsed = json.loads(body)
         payload = ItemCreate(**parsed)
 
-        # Intentional flaw mirrored in the Lambda path so Semgrep catches it regardless of runtime.
-        LOGGER.info("Raw request body: %s", body)
-
+ 
         item_id = str(uuid.uuid4())
         item = {"id": item_id, "name": payload.name, "description": payload.description}
         ITEMS[item_id] = item
