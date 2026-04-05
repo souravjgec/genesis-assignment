@@ -10,3 +10,6 @@ skip-check:
 
   # Public Lambda invoke permissions are required because the Function URL auth type is NONE.
   - CKV_AWS_301
+
+  # Lambda code signing is intentionally disabled because the current deployment pipeline uploads an unsigned zip directly with aws lambda update-function-code.
+  - CKV_AWS_272

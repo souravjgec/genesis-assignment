@@ -10,6 +10,7 @@ locals {
 
 #checkov:skip=CKV_AWS_117: The Lambda stays outside a VPC because it has no private resource dependency and the assignment favors low-cost simplicity.
 #checkov:skip=CKV_AWS_115: Reserved concurrency is intentionally unset because this AWS account cannot reserve concurrency without violating the minimum unreserved concurrency requirement.
+#checkov:skip=CKV_AWS_272: Code signing is intentionally disabled because the deployment pipeline uploads a standard unsigned zip with aws lambda update-function-code.
 resource "aws_sqs_queue" "lambda_dlq" {
   name                       = "${var.function_name}-dlq"
   sqs_managed_sse_enabled    = true
@@ -35,6 +36,7 @@ resource "aws_iam_role_policy" "lambda_dlq" {
   policy = data.aws_iam_policy_document.lambda_dlq.json
 }
 
+# Retained so Terraform does not try to delete these AWS resources while Lambda is still settling.
 resource "aws_signer_signing_profile" "lambda" {
   name_prefix = local.signer_profile_prefix
   platform_id = "AWSLambda-SHA384-ECDSA"
@@ -47,6 +49,7 @@ resource "aws_signer_signing_profile" "lambda" {
   tags = var.tags
 }
 
+# Intentionally kept detached from the function to avoid immediate destroy conflicts in AWS Lambda.
 resource "aws_lambda_code_signing_config" "this" {
   allowed_publishers {
     signing_profile_version_arns = [
@@ -60,18 +63,17 @@ resource "aws_lambda_code_signing_config" "this" {
 }
 
 resource "aws_lambda_function" "this" {
-  function_name           = var.function_name
-  description             = "Genesis assignment sample API Lambda"
-  role                    = var.lambda_role_arn
-  handler                 = "main.lambda_handler"
-  runtime                 = var.runtime
-  timeout                 = var.timeout_seconds
-  memory_size             = var.memory_size_mb
-  architectures           = [var.architecture]
-  filename                = data.archive_file.bootstrap.output_path
-  source_code_hash        = data.archive_file.bootstrap.output_base64sha256
-  kms_key_arn             = var.kms_key_arn
-  code_signing_config_arn = aws_lambda_code_signing_config.this.arn
+  function_name    = var.function_name
+  description      = "Genesis assignment sample API Lambda"
+  role             = var.lambda_role_arn
+  handler          = "main.lambda_handler"
+  runtime          = var.runtime
+  timeout          = var.timeout_seconds
+  memory_size      = var.memory_size_mb
+  architectures    = [var.architecture]
+  filename         = data.archive_file.bootstrap.output_path
+  source_code_hash = data.archive_file.bootstrap.output_base64sha256
+  kms_key_arn      = var.kms_key_arn
 
   environment {
     variables = {
