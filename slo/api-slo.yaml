@@ -1,0 +1,23 @@
+service: genesis-items-api
+
+sli:
+  type: availability
+  measurement: "(successful_invocations / total_invocations) * 100"
+  data_source: "CloudWatch Lambda Errors + Invocations metrics"
+
+slo:
+  target_percent: 99.0
+  window: 30d
+
+error_budget:
+  total_minutes_per_window: 43200
+  allowed_downtime_minutes: 432
+  current_burn_rate: "TBD after 1 hour of production traffic"
+
+policy:
+  at_50_percent_budget_consumed: "Alert the on-call engineer"
+  at_75_percent_budget_consumed: "Freeze non-critical deployments"
+  at_100_percent_consumed: "Full deployment freeze; incident declared"
+
+review_cadence: "Weekly - every Monday 10am"
+owner: "Sourav Sarkar"
