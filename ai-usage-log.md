@@ -50,7 +50,7 @@
 
 **What AI produced:** AI initially removed the placeholder Secrets Manager resource to make the secret-related Checkov findings disappear, and later assumed the custom metric path was already complete because the dashboard widget was configured.
 
-**What I changed or verified:** I realized the deletion was the wrong fix when I explicitly said not to delete existing resources. The resource was then restored, and the approach was changed to preserve infrastructure unless removal was intentional. For the metric issue, I verified the dashboard query, IAM permission, and Lambda environment variables, then found that the application itself was no longer calling `PutMetricData` after the FastAPI/Mangum refactor, so I added that call explicitly.
+**What I changed or verified:** I realized the deletion was the wrong fix when I checked in `terraform plan` then I explicitly said not to delete existing resources. The resource was then restored, and the approach was changed to preserve infrastructure unless removal was intentional. For the metric issue, I verified the dashboard query, IAM permission, and Lambda environment variables, then found that the application itself was no longer calling `PutMetricData` after the FastAPI/Mangum refactor, so I added that call explicitly.
 
 **Was the AI output correct?** No for the initial secret-manager deletion approach, and Partially for the metric suggestion. Without checking against the intended infrastructure and the real application behavior, I would have removed a resource the project still wanted to keep and left the CloudWatch custom metric non-functional.
 
