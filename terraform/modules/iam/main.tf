@@ -8,6 +8,7 @@ locals {
     "repo:${var.github_repository}:ref:refs/heads/${var.github_main_branch}",
     "repo:${var.github_repository}:environment:${var.github_environment}",
   ]
+  code_signing_config_arn_pattern = "arn:${data.aws_partition.current.partition}:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:code-signing-config:*"
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -131,10 +132,17 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = [
       "lambda:GetFunction",
       "lambda:GetFunctionConfiguration",
-      "lambda:GetCodeSigningConfig",
       "lambda:UpdateFunctionCode",
     ]
     resources = [local.lambda_function_arn]
+  }
+
+  statement {
+    sid = "AllowReadingCodeSigningConfig"
+    actions = [
+      "lambda:GetCodeSigningConfig",
+    ]
+    resources = [local.code_signing_config_arn_pattern]
   }
 }
 
