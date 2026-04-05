@@ -8,6 +8,11 @@ variable "lambda_role_arn" {
   type        = string
 }
 
+variable "lambda_role_name" {
+  description = "Execution role name for the Lambda function."
+  type        = string
+}
+
 variable "runtime" {
   description = "Lambda runtime identifier."
   type        = string
@@ -37,8 +42,8 @@ variable "config_parameter_name" {
   type        = string
 }
 
-variable "secret_arn" {
-  description = "Secrets Manager secret ARN the application can read at runtime."
+variable "kms_key_arn" {
+  description = "KMS key ARN used for Lambda environment variables."
   type        = string
 }
 

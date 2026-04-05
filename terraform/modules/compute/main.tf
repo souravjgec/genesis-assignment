@@ -4,44 +4,102 @@ data "archive_file" "bootstrap" {
   output_path = "${path.module}/build/bootstrap.zip"
 }
 
+locals {
+  signer_profile_prefix = substr(join("", regexall("[0-9A-Za-z]+", var.function_name)), 0, 38)
+}
+
 #checkov:skip=CKV_AWS_117: The Lambda stays outside a VPC because it has no private resource dependency and the assignment favors low-cost simplicity.
-#checkov:skip=CKV_AWS_173: Lambda environment variables carry only secret references and config names, so an extra CMK is intentionally not added in this demo.
-#checkov:skip=CKV_AWS_50: X-Ray tracing is omitted to keep the observability setup focused on CloudWatch metrics and logs required by the assignment.
-#checkov:skip=CKV_AWS_116: A DLQ is not configured because this proof-of-concept uses CloudWatch alarms and logs instead of asynchronous failure queues.
-#checkov:skip=CKV_AWS_115: Reserved concurrency is left unset so the function can use default account concurrency during the free-tier demonstration.
-#checkov:skip=CKV_AWS_272: Code signing is omitted to keep the deployment flow lightweight for a take-home assignment proof-of-concept.
+#checkov:skip=CKV_AWS_115: Reserved concurrency is intentionally unset because this AWS account cannot reserve concurrency without violating the minimum unreserved concurrency requirement.
+resource "aws_sqs_queue" "lambda_dlq" {
+  name                       = "${var.function_name}-dlq"
+  sqs_managed_sse_enabled    = true
+  message_retention_seconds  = 1209600
+  visibility_timeout_seconds = 30
+
+  tags = var.tags
+}
+
+data "aws_iam_policy_document" "lambda_dlq" {
+  statement {
+    sid = "AllowSendingMessagesToDlq"
+    actions = [
+      "sqs:SendMessage",
+    ]
+    resources = [aws_sqs_queue.lambda_dlq.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_dlq" {
+  name   = "${var.function_name}-dlq"
+  role   = var.lambda_role_name
+  policy = data.aws_iam_policy_document.lambda_dlq.json
+}
+
+resource "aws_signer_signing_profile" "lambda" {
+  name_prefix = local.signer_profile_prefix
+  platform_id = "AWSLambda-SHA384-ECDSA"
+
+  signature_validity_period {
+    value = 12
+    type  = "MONTHS"
+  }
+
+  tags = var.tags
+}
+
+resource "aws_lambda_code_signing_config" "this" {
+  allowed_publishers {
+    signing_profile_version_arns = [
+      aws_signer_signing_profile.lambda.version_arn,
+    ]
+  }
+
+  policies {
+    untrusted_artifact_on_deployment = "Enforce"
+  }
+}
+
 resource "aws_lambda_function" "this" {
-  function_name    = var.function_name
-  description      = "Genesis assignment sample API Lambda"
-  role             = var.lambda_role_arn
-  handler          = "main.lambda_handler"
-  runtime          = var.runtime
-  timeout          = var.timeout_seconds
-  memory_size      = var.memory_size_mb
-  architectures    = [var.architecture]
-  filename         = data.archive_file.bootstrap.output_path
-  source_code_hash = data.archive_file.bootstrap.output_base64sha256
+  function_name           = var.function_name
+  description             = "Genesis assignment sample API Lambda"
+  role                    = var.lambda_role_arn
+  handler                 = "main.lambda_handler"
+  runtime                 = var.runtime
+  timeout                 = var.timeout_seconds
+  memory_size             = var.memory_size_mb
+  architectures           = [var.architecture]
+  filename                = data.archive_file.bootstrap.output_path
+  source_code_hash        = data.archive_file.bootstrap.output_base64sha256
+  kms_key_arn             = var.kms_key_arn
+  code_signing_config_arn = aws_lambda_code_signing_config.this.arn
 
   environment {
     variables = {
       CONFIG_PARAMETER_NAME = var.config_parameter_name
-      SECRET_ARN            = var.secret_arn
       ITEMS_METRIC_NS       = var.custom_metric_namespace
       ITEMS_METRIC_NAME     = var.custom_metric_name
       LOG_LEVEL             = "INFO"
     }
   }
 
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda_dlq.arn
+  }
+
+  tracing_config {
+    mode = "Active"
+  }
+
   tags = var.tags
 }
 
-#checkov:skip=CKV_AWS_258: Function URL auth is intentionally NONE so GitHub smoke tests and evaluator demos can reach the API without extra auth setup.
+#checkov:skip=CKV_AWS_258: Function URL auth remains NONE so the existing public endpoint behavior is preserved.
 resource "aws_lambda_function_url" "this" {
   function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
 }
 
-#checkov:skip=CKV_AWS_301: Public invoke permission is required because the assignment needs a live public endpoint for smoke testing and demonstration.
+#checkov:skip=CKV_AWS_301: Public invoke permission is preserved because the function URL is intentionally public.
 resource "aws_lambda_permission" "function_url" {
   statement_id           = "AllowFunctionUrlInvoke"
   action                 = "lambda:InvokeFunctionUrl"

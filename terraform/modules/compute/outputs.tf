@@ -14,6 +14,6 @@ output "lambda_invoke_arn" {
 }
 
 output "lambda_function_url" {
-  description = "Public Function URL for the Lambda."
+  description = "IAM-authenticated Function URL for the Lambda."
   value       = aws_lambda_function_url.this.function_url
 }

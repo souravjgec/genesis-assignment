@@ -39,6 +39,11 @@ variable "custom_metric_name" {
   type        = string
 }
 
+variable "kms_key_arn" {
+  description = "KMS key ARN used for CloudWatch Logs and SNS encryption."
+  type        = string
+}
+
 variable "tags" {
   description = "Tags applied to observability resources."
   type        = map(string)

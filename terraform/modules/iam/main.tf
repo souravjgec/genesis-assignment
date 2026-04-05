@@ -77,11 +77,11 @@ data "aws_iam_policy_document" "lambda_permissions" {
   }
 
   statement {
-    sid = "AllowReadingSecret"
+    sid = "AllowDecryptingApplicationKeys"
     actions = [
-      "secretsmanager:GetSecretValue",
+      "kms:Decrypt",
     ]
-    resources = [var.secret_arn]
+    resources = var.kms_key_arns
   }
 }
 

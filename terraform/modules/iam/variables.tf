@@ -45,9 +45,9 @@ variable "config_parameter_arn" {
   type        = string
 }
 
-variable "secret_arn" {
-  description = "ARN of the Secrets Manager secret the Lambda function can read."
-  type        = string
+variable "kms_key_arns" {
+  description = "KMS key ARNs the Lambda function can decrypt."
+  type        = list(string)
 }
 
 variable "tags" {

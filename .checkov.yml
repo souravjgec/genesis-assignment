@@ -1,22 +1,12 @@
 skip-check:
-  - CKV_AWS_119
-  - CKV_AWS_28
-  - CKV_AWS_149
+  # Lambda intentionally stays outside a VPC for this project.
   - CKV_AWS_117
-  - CKV_AWS_173
-  - CKV_AWS_50
-  - CKV_AWS_116
+
+  # Reserved concurrency is intentionally unset because this AWS account cannot reserve concurrency without violating its minimum unreserved concurrency requirement.
   - CKV_AWS_115
-  - CKV_AWS_272
+
+  # Function URL is intentionally public so demos and smoke tests can call it directly.
   - CKV_AWS_258
+
+  # Public Lambda invoke permissions are required because the Function URL auth type is NONE.
   - CKV_AWS_301
-  - CKV_AWS_158
-  - CKV_AWS_338
-  - CKV_AWS_26
-  - CKV2_AWS_57
-  - CKV2_AWS_34
-  - CKV_AWS_144
-  - CKV2_AWS_62
-  - CKV_AWS_18
-  - CKV2_AWS_61
-  - CKV_AWS_145
