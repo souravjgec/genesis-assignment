@@ -19,7 +19,7 @@ output "lambda_function_arn" {
 }
 
 output "api_base_url" {
-  description = "Public base URL for the deployed API."
+  description = "IAM-authenticated base URL for the deployed API."
   value       = module.compute.lambda_function_url
 }
 
