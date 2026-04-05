@@ -131,6 +131,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = [
       "lambda:GetFunction",
       "lambda:GetFunctionConfiguration",
+      "lambda:GetCodeSigningConfig",
       "lambda:UpdateFunctionCode",
     ]
     resources = [local.lambda_function_arn]
