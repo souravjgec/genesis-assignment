@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app import main
 from app.main import app, reset_items
 
 client = TestClient(app)
@@ -16,7 +17,13 @@ def test_healthcheck_returns_expected_payload() -> None:
     assert response.json() == {"status": "ok", "version": "1.0.0"}
 
 
-def test_create_item_returns_created_item() -> None:
+def test_create_item_returns_created_item(monkeypatch) -> None:
+    emitted = {"count": 0}
+
+    def fake_emit_items_created_metric() -> None:
+        emitted["count"] += 1
+
+    monkeypatch.setattr(main, "emit_items_created_metric", fake_emit_items_created_metric)
     payload = {"name": "widget", "description": "first item"}
 
     response = client.post("/items", json=payload)
@@ -26,6 +33,7 @@ def test_create_item_returns_created_item() -> None:
     assert data["name"] == payload["name"]
     assert data["description"] == payload["description"]
     assert data["id"]
+    assert emitted["count"] == 1
 
 
 def test_get_item_returns_existing_item() -> None:
