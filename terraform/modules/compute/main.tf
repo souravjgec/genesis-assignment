@@ -66,7 +66,7 @@ resource "aws_lambda_function" "this" {
   function_name    = var.function_name
   description      = "Genesis assignment sample API Lambda"
   role             = var.lambda_role_arn
-  handler          = "main.lambda_handler"
+  handler          = "main.handler"
   runtime          = var.runtime
   timeout          = var.timeout_seconds
   memory_size      = var.memory_size_mb

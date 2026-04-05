@@ -1,10 +1,10 @@
-import json
 import logging
 import os
 import uuid
 from typing import Dict
 
 from fastapi import FastAPI, HTTPException, Request
+from mangum import Mangum
 from pydantic import BaseModel, Field
 
 LOGGER = logging.getLogger("genesis-items-api")
@@ -56,47 +56,7 @@ def get_item(item_id: str) -> dict[str, str]:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
 
-
-def lambda_handler(event: dict, context: object) -> dict:
-    path = event.get("rawPath") or event.get("path", "")
-    method = event.get("requestContext", {}).get("http", {}).get("method") or event.get("httpMethod", "")
-
-    if method == "GET" and path == "/health":
-        return _response(200, healthcheck())
-
-    if method == "POST" and path == "/items":
-        body = event.get("body") or "{}"
-        if event.get("isBase64Encoded"):
-            raise ValueError("Base64 payloads are not supported in this sample handler")
-
-        parsed = json.loads(body)
-        payload = ItemCreate(**parsed)
-
- 
-        item_id = str(uuid.uuid4())
-        item = {"id": item_id, "name": payload.name, "description": payload.description}
-        ITEMS[item_id] = item
-        return _response(201, item)
-
-    if method == "GET" and path == "/items":
-        return _response(200, list_items())
-
-    if method == "GET" and path.startswith("/items/"):
-        item_id = path.rsplit("/", maxsplit=1)[-1]
-        item = ITEMS.get(item_id)
-        if item is None:
-            return _response(404, {"detail": "Item not found"})
-        return _response(200, item)
-
-    return _response(404, {"detail": "Not found"})
-
-
-def _response(status_code: int, body: dict | list[dict[str, str]]) -> dict:
-    return {
-        "statusCode": status_code,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps(body),
-    }
+handler = Mangum(app)
 
 
 if __name__ == "__main__":
