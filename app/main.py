@@ -44,6 +44,11 @@ async def create_item(request: Request, payload: ItemCreate) -> dict[str, str]:
     return item
 
 
+@app.get("/items")
+def list_items() -> list[dict[str, str]]:
+    return list(ITEMS.values())
+
+
 @app.get("/items/{item_id}")
 def get_item(item_id: str) -> dict[str, str]:
     item = ITEMS.get(item_id)
@@ -73,6 +78,9 @@ def lambda_handler(event: dict, context: object) -> dict:
         ITEMS[item_id] = item
         return _response(201, item)
 
+    if method == "GET" and path == "/items":
+        return _response(200, list_items())
+
     if method == "GET" and path.startswith("/items/"):
         item_id = path.rsplit("/", maxsplit=1)[-1]
         item = ITEMS.get(item_id)
@@ -83,7 +91,7 @@ def lambda_handler(event: dict, context: object) -> dict:
     return _response(404, {"detail": "Not found"})
 
 
-def _response(status_code: int, body: dict) -> dict:
+def _response(status_code: int, body: dict | list[dict[str, str]]) -> dict:
     return {
         "statusCode": status_code,
         "headers": {"Content-Type": "application/json"},

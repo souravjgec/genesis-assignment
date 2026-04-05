@@ -37,6 +37,16 @@ def test_get_item_returns_existing_item() -> None:
     assert response.json() == created
 
 
+def test_list_items_returns_all_existing_items() -> None:
+    first = client.post("/items", json={"name": "widget", "description": "stored item"}).json()
+    second = client.post("/items", json={"name": "gadget", "description": "another item"}).json()
+
+    response = client.get("/items")
+
+    assert response.status_code == 200
+    assert response.json() == [first, second]
+
+
 def test_get_item_returns_404_for_unknown_id() -> None:
     response = client.get("/items/missing-id")
 

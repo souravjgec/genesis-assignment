@@ -1,6 +1,6 @@
 data "archive_file" "bootstrap" {
   type        = "zip"
-  source_file = "${path.module}/src/main.py"
+  source_file = "${path.module}/../../../app/main.py"
   output_path = "${path.module}/build/bootstrap.zip"
 }
 
