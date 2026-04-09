@@ -529,27 +529,6 @@ resource "aws_s3_bucket_replication_configuration" "terraform_state_logs" {
   ]
 }
 
-resource "aws_dynamodb_table" "terraform_lock" {
-  name         = "${local.name_prefix}-tf-lock"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  point_in_time_recovery {
-    enabled = true
-  }
-
-  server_side_encryption {
-    enabled     = true
-    kms_key_arn = aws_kms_key.state.arn
-  }
-
-  tags = local.tags
-}
 
 resource "aws_ssm_parameter" "app_config" {
   name   = local.config_parameter_name

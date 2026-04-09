@@ -3,10 +3,7 @@ output "terraform_state_bucket_name" {
   value       = aws_s3_bucket.terraform_state.bucket
 }
 
-output "terraform_lock_table_name" {
-  description = "Name of the DynamoDB table intended for Terraform state locking."
-  value       = aws_dynamodb_table.terraform_lock.name
-}
+
 
 output "lambda_function_name" {
   description = "Name of the provisioned Lambda function."
